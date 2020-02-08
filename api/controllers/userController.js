@@ -44,7 +44,9 @@ const getUserMovies = (req, res) => {
 }
 
 const createUser = (req, res) => {
-    const { body: { user } } = req
+    const user = req.body
+
+    console.warn(`CALL TO CREATE USER. BODY ${JSON.stringify(req.body)}`)
 
 
     if (!user.email) {
@@ -81,7 +83,7 @@ const createUser = (req, res) => {
 }
 
 const connectUser = (req, res, next) => {
-    const { body: { user } } = req
+    const user = req.body
 
     if (!user.email) {
         return res.status(500).json({

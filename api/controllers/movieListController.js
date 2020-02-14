@@ -31,16 +31,8 @@ const createMovies = (req, res) => {
     })
 }
 
-const deleteCollection = (req, res) => {
-    let collectionName = req.params.collectionName
-    Movie.deleteMany({'status':'pending'}, () => {
-        res.send(200, `Collection ${collectionName} has been deleted.`)
-    })
-}
-
 module.exports = {
     listAllMovies,
     updateMovie,
-    createMovies,
-    deleteCollection
+    createMovies
 }

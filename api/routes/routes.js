@@ -12,15 +12,17 @@ module.exports = (app) => {
 
 
     app.route('/user/:id')
-        .get(userCtrl.getUserMovies)
-        .put(userCtrl.vote)
+        .delete(userCtrl.deleteUser)
 
     app.route('/user')
         .post(userCtrl.createUser)
-        .put(userCtrl.connectUser)
+        .get(userCtrl.getAllUsers)
+        .put(userCtrl.getUserByEmail)
 
+    app.route('/login')
+        .put(userCtrl.loginUser)
 
-    app.route('/admin/:collectionName')
-        .delete(movieCtrl.deleteCollection)
+    app.route('/vote')
+        .put(userCtrl.vote)
 
 };

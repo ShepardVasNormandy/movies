@@ -3,21 +3,16 @@ module.exports = (app) => {
     var movieCtrl = require('../controllers/movieListController');
     var userCtrl = require('../controllers/userController');
 
-    // movieList Routes
+    // Movie Routes
     app.route('/movies')
         .get(movieCtrl.listAllMovies)
 
-    app.route('/movies/:movieId')
-        .put(movieCtrl.updateMovie)
+    app.route('/movies/best')
+        .get(movieCtrl.bestMovie)
 
-
-    app.route('/user/:id')
-        .delete(userCtrl.deleteUser)
-
+    // User routes
     app.route('/user')
         .post(userCtrl.createUser)
-        .get(userCtrl.getAllUsers)
-        .put(userCtrl.getUserByEmail)
 
     app.route('/login')
         .put(userCtrl.loginUser)

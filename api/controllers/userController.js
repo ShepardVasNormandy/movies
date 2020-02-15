@@ -6,22 +6,11 @@ const Movie = mongoose.model('Movie')
 
 const User = mongoose.model('User')
 
-
-const rp = require('request-promise')
-
 const jwt = require('jsonwebtoken')
 
 const secret = require('../config/credentials')
 
-const auth = {
 
-}
-
-
-
-const getUserMovies = (req, res) => {
-    res.json(`ok!`)
-}
 
 const createUser = (req, res) => {
     const user = req.body
@@ -48,7 +37,7 @@ const createUser = (req, res) => {
         if (!user.username) {
             return res.status(500).json({
                 errors: {
-                    name: 'is required'
+                    username: 'is required'
                 }
             })
         }
@@ -62,8 +51,13 @@ const createUser = (req, res) => {
         }
         const finalUser = new User(user)
 
-        return finalUser.save().then(() => {
-            res.json({ user: finalUser })
+        return finalUser.save().then((newUser) => {
+            const token = jwt.sign({ userId: newUser._id }, secret.crypto, { expiresIn: '24h' })
+            res.json({
+                success: true,
+                user: { userId: newUser._id, username: newUser.username, movies: newUser.movies },
+                token: token
+            })
         })
     })
 }
@@ -108,48 +102,28 @@ const loginUser = (req, res, next) => {
         const token = jwt.sign({ userId: userProfile._id }, secret.crypto, { expiresIn: '24h' })
         res.json({
             success: true,
-            user: { userId: userProfile._id, username: userProfile.username },
+            user: { userId: userProfile._id, username: userProfile.username, movies: userProfile.movies },
             token: token
         })
     })
 
 }
 
-const deleteUser = (req, res) => {
-    const userId = req.params.id
-    User.deleteOne({ _id: userId }).lean().then(() => {
-        res.json(`User with id ${userId} has been deleted successfully`)
-    })
-}
-
-const getAllUsers = (req, res, next) => {
-    return User.find({}).lean().then(users => {
-        if (!users) {
-            return res.status(404).json("No user found")
-        }
-        return res.json({
-            users
-        })
-    })
-}
-
-const getUserByEmail = (req, res, next) => {
-    let email = req.body.email
-
-    return User.find({ email }).lean().then(user => {
-        if (!user) {
-            return res.status(404).json("No user found")
-        }
-        return res.json({
-            user
-        })
-    })
-}
-
 const vote = (req, res) => {
     const userId = req.body.userId
     const movieId = req.body.movieId
-    const vote = req.body.vote
+    let vote = req.body.vote
+
+    //switching value to string, due to truthy/falsy nature of 1 and 0 in JS
+    switch (vote) {
+        case 0:
+            vote = 'down'
+            break
+        case 1:
+            vote: 'up'
+            break
+    }
+
     if (!movieId) {
         return res.status(500).json({
             errors: {
@@ -171,63 +145,57 @@ const vote = (req, res) => {
             }
         })
     }
-    User.findById(userId).then(user => {
+    User.findById(userId).lean().then(user => {
         if (!user) {
             return res.status(404).json("No user found")
         }
-        if (vote === 1 && user.movies && user.movies.length === 3) {
+        if (vote === 'up' && user.movies && user.movies.length === 3) {
             return res.status(500).json({
                 errors: {
                     message: `You have already voted for three movies.`
                 }
             })
         }
-        Movie.findById(movieId).then(movie => {
-            if (!movie) {
-                return res.status(404).json("No movie found")
-            }
-            if (user.movies.find(result => result._id === movie._id)) {
-                if (vote === 1  && user.movies.length < 3) {
-                    user.movies.unshift(movie)
-                    movie.score ++
-                    User.findOneAndUpdate({_id:user._id}, user, {new:true}).lean().then(updatedUser => {
-                        Movie.findOneAndUpdate({_id:movie._id}, movie, {new:true}).lean().then(updatedMovie => {
-                            res.status(200).json({
-                                message: `User ${user.username} has voted on ${movie.Title}. Its new score is ${updatedMovie.score}`,    
-                            })
-                        })
-                    })
-                } else if (vote === 0  && user.movies.length < 3) {
-                    user.movies.push(movie)
-                    movie.score --
-                    User.findOneAndUpdate({_id:user._id}, user, {new:true}).lean().then(updatedUser => {
-                        Movie.findOneAndUpdate({_id:movie._id}, movie, {new:true}).lean().then(updatedMovie => {
-                            res.status(200).json({
-                                message: `User ${user.username} has voted on ${movie.Title}. Its new score is ${updatedMovie.score}`,
-    
-                            })
-                        })
-                    })
-    
-                }
-            }
+        if (vote === 'up' && (user.movies.find(result => result._id === movieId))) {
             res.status(500).json({
                 error: {
-                    message: `You've already voted on this movie.`
+                    message: `You have already voted on this movie.`
                 }
             })
-        })
+        } else {
+            Movie.findById(movieId).lean().then(movie => {
+                if (!movie) {
+                    return res.status(404).json("No movie found")
+                }
+                if (vote === 1) {
+                    movie.score++
+                    if (!movie.upvoters) movie['upvoters'] = []
+                    movie['upvoters'].push(user.username)
+                    user.movies.push(movie)
+                } else if (vote === 'down' && movie.score > 0) {
+                    if (!movie.upvoters) movie['upvoters'] = []
+                    movie.score--
+                    movie['upvoters'] = movie['upvoters'].filter(item => item !== user.username)
+                    user.movies = user.movies.filter(item => item._id !== movie._id)
+                }
+                User.findOneAndUpdate({ _id: user._id }, user, { new: true }).lean().then(updatedUser => {
+                    Movie.findOneAndUpdate({ _id: movie._id }, movie, { new: true }).lean().then(updatedMovie => {
+                        res.status(200).json({
+                            message: `User ${user.username} has voted on ${movie.Title}. Its new score is ${updatedMovie.score}`,
+                            user: { userId: updatedUser._id, username: updatedUser.username, movies: updatedUser.movies },
+                            movie: updatedMovie
+                        })
+                    })
+                })
+            })
+        }
     })
 }
 
 module.exports = {
     createUser,
-    getUserMovies,
-    deleteUser,
     vote,
-    getUserByEmail,
-    getAllUsers,
-    loginUser
+    loginUser,
 }
 
 

@@ -11,7 +11,7 @@ const UserSchema = new Schema({
     password: { type: String, required: true },
     username: { type: String, required: true },
     birthday: String,
-    movies: [String],
+    movies: [Object],
     creationDate: {
         type: String,
         default: moment().unix()

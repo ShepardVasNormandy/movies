@@ -8,6 +8,8 @@ Install info: https://docs.mongodb.com/manual/tutorial/install-mongodb-on-os-x/
 
 ######################################
 
+Install dependencies with `npm install`
+
 Launch api with command `npm run start`
 
 That's it! 

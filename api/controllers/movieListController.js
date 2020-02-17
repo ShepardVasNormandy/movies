@@ -24,7 +24,7 @@ const bestMovie = (req, res) => {
     contestCtrl.getContest().then(contests => {
         let contest = contests[0]
         if (contest.expiration_date > timestamp) {
-            res.status(500).json("Contest not over yet")
+            res.json("Contest not over yet")
         } else {
             Movie.find({}).lean().then(movies => {
                 movies = _.orderBy(movies, ['score'], ['desc'])

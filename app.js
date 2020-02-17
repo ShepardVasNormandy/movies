@@ -3,8 +3,8 @@ const app = express()
 const port = process.env.PORT || 3000
 const mongoose = require('mongoose')
 const Movie = require('./api/models/movieModel')
-const User = require('./api/models/UserModel')
-const Contest = require('./api/models/ContestModel')
+const User = require('./api/models/userModel')
+const Contest = require('./api/models/contestModel')
 const bodyParser = require('body-parser')
 const routes = require('./api/routes/routes')
 

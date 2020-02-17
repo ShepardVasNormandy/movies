@@ -28,7 +28,7 @@ app.listen(port)
 //Either uncomment it on first launch, use an already existing database, or call it later on
 //Otherwise no movies will show in the database
 
-// movieCtrl.createMovies()
-// contestCtrl.createContest()
+movieCtrl.createMovies()
+contestCtrl.createContest()
 
 console.warn(`Movie API started on ${port}`)

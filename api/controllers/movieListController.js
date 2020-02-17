@@ -4,6 +4,10 @@ var mongoose = require('mongoose')
 
 const Movie = mongoose.model('Movie');
 const rp = require('request-promise');
+const contestCtrl = require('../controllers/contestController');
+const moment = require('moment')
+
+
 
 const _ = require('lodash')
 
@@ -16,11 +20,19 @@ const listAllMovies = (req, res) => {
 }
 
 const bestMovie = (req, res) => {
-    Movie.find({}).lean().then(movies => {
-        movies = _.orderBy(movies, ['score'], ['desc'])
-        res.json(movies)
-    }).catch(err => {
-        res.json(err)
+    let timestamp = moment().format('x')
+    contestCtrl.getContest().then(contests => {
+        let contest = contests[0]
+        if (contest.expiration_date > timestamp) {
+            res.status(500).json("Contest not over yet")
+        } else {
+            Movie.find({}).lean().then(movies => {
+                movies = _.orderBy(movies, ['score'], ['desc'])
+                res.json(movies[0])
+            }).catch(err => {
+                res.json(err)
+            })
+        }
     })
 }
 

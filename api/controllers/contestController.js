@@ -5,9 +5,7 @@ const mongoose = require('mongoose')
 const Contest = mongoose.model('Contest')
 
 const getContest = (req, res) => {
-    Contest.find({}).then(contest => {
-        res.json(contest)
-    })
+    return Contest.find({})
 }
 
 const createContest = () => {

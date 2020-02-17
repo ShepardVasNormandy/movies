@@ -2,6 +2,7 @@
 module.exports = (app) => {
     var movieCtrl = require('../controllers/movieListController');
     var userCtrl = require('../controllers/userController');
+    var contestCtrl = require('../controllers/contestController');
 
     // Movie Routes
     app.route('/movies')
@@ -19,5 +20,9 @@ module.exports = (app) => {
 
     app.route('/vote')
         .put(userCtrl.vote)
+
+    //Contest routes
+    app.route('/contest')
+        .get(contestCtrl.getContest)
 
 };

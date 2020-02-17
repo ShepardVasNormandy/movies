@@ -4,12 +4,14 @@ const port = process.env.PORT || 3000
 const mongoose = require('mongoose')
 const Movie = require('./api/models/movieModel')
 const User = require('./api/models/UserModel')
+const Contest = require('./api/models/ContestModel')
 const bodyParser = require('body-parser')
 const routes = require('./api/routes/routes')
 
 const cors = require('cors')
 
 const movieCtrl = require('./api/controllers/movieListController')
+const contestCtrl = require('./api/controllers/contestController')
 
 mongoose.Promise = global.Promise
 mongoose.connect( 'mongodb://localhost/Moviedb')
@@ -26,6 +28,7 @@ app.listen(port)
 //Either uncomment it on first launch, use an already existing database, or call it later on
 //Otherwise no movies will show in the database
 
-movieCtrl.createMovies()
+// movieCtrl.createMovies()
+// contestCtrl.createContest()
 
 console.warn(`Movie API started on ${port}`)

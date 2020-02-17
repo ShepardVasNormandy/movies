@@ -14,4 +14,4 @@ Launch api with command `npm run start`
 
 That's it! 
 
-(Though you should probably comment out line 29 in app.js, it's what populates the Database on launch)
+Though you should probably comment out line 31 & 32 in app.js, it's what populates the movie collection on launch, and creates the contest :) 
